@@ -1,3 +1,13 @@
+openmediavault-example (8.0.2) stable; urgency=medium
+
+  * Fix the "Open Example" button: URI-encode the generated external
+    URL with the encodeuricomponent filter. Without encoding the URL
+    contains slashes, which do not match the single-segment
+    externalRedirect/:url workbench route and the click ends on the
+    404 page. Same fix as immich 8.0.3.
+
+ -- fffeng99999  Mon, 06 Oct 2026 18:30:00 +0800
+
 openmediavault-example (8.0.1) stable; urgency=medium
 
   * Template skeleton release: full standard plugin structure for

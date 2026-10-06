@@ -131,7 +131,7 @@ data:
       - text: _("Open Example")
         execute:
           type: url
-          url: "/externalRedirect/{{ ['http://', location() | get('hostname'), ':', port] | join }}"
+          url: "/externalRedirect/{{ ['http://', location() | get('hostname'), ':', port] | join | encodeuricomponent }}"
       - template: cancel
         execute:
           type: url
