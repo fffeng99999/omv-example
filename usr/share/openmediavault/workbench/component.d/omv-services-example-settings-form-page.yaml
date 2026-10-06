@@ -14,7 +14,7 @@ data:
         method: set
     hints:
       - type: info
-        text: _("Example is the plugin template skeleton. The mode selects the integration branch of the Salt state: 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit; 'Docker Compose stack' renders .env and docker-compose.yml into the compose directory and manages the stack. Save the settings and apply changes to render the files, then use the buttons below to start/stop the service. Read-only fields must set submitValue: false, and the settings route must keep 'editing: true'.")
+        text: _("Example is the plugin template skeleton. The mode selects the integration branch of the Salt state — 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit, while 'Docker Compose stack' renders .env and docker-compose.yml into the compose directory and manages the stack. Save the settings and apply changes to render the files, then use the buttons below to start/stop the service.")
         dismissible: true
         stateId: 7c9d3e2a-1b4f-4e69-9c40-3f7a8d21b6e4
     fields:
@@ -49,7 +49,7 @@ data:
       - type: numberInput
         name: port
         label: _("Port")
-        hint: _("Service port. Systemd mode: passed to the example binary. Compose mode: host port of the published container port.")
+        hint: _("Service port. In Systemd mode it is passed to the example binary. In Compose mode it is the host port of the published container port.")
         value: 8080
         validators:
           min: 1
@@ -61,7 +61,7 @@ data:
       - type: textInput
         name: extraOptions
         label: _("Extra options")
-        hint: _("Free-form configuration rendered verbatim into /etc/example/example.conf (systemd mode) and into the .env file (Compose mode). TODO: replace with the real settings of your upstream service.")
+        hint: _("Free-form configuration rendered verbatim into /etc/example/example.conf (systemd mode) and into the .env file (Compose mode). Replace this with the real settings of your upstream service.")
 
       - type: divider
         title: _("Compose mode")

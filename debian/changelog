@@ -1,3 +1,16 @@
+openmediavault-example (8.0.3) stable; urgency=medium
+
+  * Fix the CI lint failure: plain scalars in workbench YAML must not
+    contain a colon followed by a space, so reword three hint texts
+    (the official component files avoid colons inside _() strings
+    for the same reason). The v8.0.2 deb was never released because
+    of this lint error.
+  * Ship omv-example-ctl and the confdb create.d script with the
+    executable bit (Windows checkouts lose the bit, which would
+    break first-install configuration).
+
+ -- fffeng99999  Mon, 06 Oct 2026 19:10:00 +0800
+
 openmediavault-example (8.0.2) stable; urgency=medium
 
   * Fix the "Open Example" button: URI-encode the generated external
