@@ -1,0 +1,10 @@
+version: "1.0"
+type: navigation-item
+data:
+  path: "services.example"
+  text: _("Example")
+  icon: "mdi:puzzle"
+  url: "/services/example"
+  permissions:
+    role:
+    - admin

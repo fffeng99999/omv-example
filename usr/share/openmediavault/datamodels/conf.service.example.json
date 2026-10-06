@@ -1,0 +1,44 @@
+{
+	"type": "config",
+	"id": "conf.service.example",
+	"title": "Example",
+	"queryinfo": {
+		"xpath": ".//services/example",
+		"iterable": false
+	},
+	"properties": {
+		"enable": {
+			"type": "boolean",
+			"default": false
+		},
+		"mode": {
+			"type": "string",
+			"default": "systemd"
+		},
+		"port": {
+			"type": "integer",
+			"minimum": 1,
+			"maximum": 65535,
+			"default": 8080
+		},
+		"extraOptions": {
+			"type": "string",
+			"default": ""
+		},
+		"image": {
+			"type": "string",
+			"default": "nginx:1.27-alpine"
+		},
+		"composeDirRef": {
+			"type": "string",
+			"oneOf": [{
+				"type": "string",
+				"format": "uuidv4"
+			}, {
+				"type": "string",
+				"maxLength": 0
+			}],
+			"default": ""
+		}
+	}
+}

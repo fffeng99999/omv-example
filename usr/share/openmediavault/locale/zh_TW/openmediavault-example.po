@@ -1,0 +1,126 @@
+# Copyright (C) 2026 ${GITHUB_USER}
+# This file is distributed under the same license as the openmediavault-example package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: openmediavault-example 8.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-04 12:00+0800\n"
+"PO-Revision-Date: 2026-10-04 12:00+0800\n"
+"Last-Translator: ${GITHUB_USER}\n"
+"Language-Team: Chinese (Traditional)\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Example"
+msgstr "範例"
+
+msgid "Settings"
+msgstr "設定"
+
+msgid "Updated Example settings."
+msgstr "範例服務設定已更新。"
+
+msgid "Running"
+msgstr "執行中"
+
+msgid "Stopped"
+msgstr "已停止"
+
+msgid "Not installed"
+msgstr "未部署"
+
+msgid "Example is the plugin template skeleton. The mode selects the integration branch of the Salt state: 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit; 'Docker Compose stack' renders .env and docker-compose.yml into the compose directory and manages the stack. Save the settings and apply changes to render the files, then use the buttons below to start/stop the service. Read-only fields must set submitValue: false, and the settings route must keep 'editing: true'."
+msgstr "Example 是外掛模板骨架。「模式」決定 Salt state 渲染的整合分支：「systemd 服務」會渲染 /etc/example/example.conf 與 example.service 單元並管理該單元；「Docker Compose 堆疊」會向 compose 目錄渲染 .env 與 docker-compose.yml 並管理該堆疊。儲存設定後按「套用」渲染檔案，再用下方按鈕啟停服務。唯讀欄位必須寫 submitValue: false，設定頁路由必須保留 editing: true。"
+
+msgid "Status"
+msgstr "狀態"
+
+msgid "Service status"
+msgstr "服務狀態"
+
+msgid "Service"
+msgstr "服務"
+
+msgid "Enabled"
+msgstr "啟用"
+
+msgid "Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack files are rendered and the stack is recreated on change (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched."
+msgstr "由 OMV 自動管理服務。按「套用」時：systemd 模式渲染並啟動 systemd 單元；Compose 模式渲染堆疊檔案、檔案變更時重建堆疊。停用服務會在「套用」時停止並移除單元；資料一律不動。"
+
+msgid "Mode"
+msgstr "模式"
+
+msgid "Integration mode rendered by the Salt state. Keep only the branch your plugin needs and delete the other one together with its fields, templates and ctl branch."
+msgstr "Salt state 渲染的整合模式。衍生實際外掛時只保留所需分支，刪除另一分支及其欄位、範本與 ctl 分支。"
+
+msgid "Systemd service"
+msgstr "systemd 服務"
+
+msgid "Docker Compose stack"
+msgstr "Docker Compose 堆疊"
+
+msgid "Common"
+msgstr "一般"
+
+msgid "Port"
+msgstr "連接埠"
+
+msgid "Service port. Systemd mode: passed to the example binary. Compose mode: host port of the published container port."
+msgstr "服務連接埠。systemd 模式：傳給 example 程式；Compose 模式：容器映射埠的主機側埠。"
+
+msgid "Systemd mode"
+msgstr "systemd 模式"
+
+msgid "Extra options"
+msgstr "額外設定"
+
+msgid "Free-form configuration rendered verbatim into /etc/example/example.conf (systemd mode) and into the .env file (Compose mode). TODO: replace with the real settings of your upstream service."
+msgstr "自由格式設定，原樣渲染進 /etc/example/example.conf（systemd 模式）與 .env 檔案（Compose 模式）。TODO：請替換為上游服務的真實設定項。"
+
+msgid "Compose mode"
+msgstr "Compose 模式"
+
+msgid "Image"
+msgstr "映檔"
+
+msgid "Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag."
+msgstr "example 服務的容器映檔（僅 Compose 模式）。請固定具體版本，避免浮動 tag。"
+
+msgid "Stack files shared folder"
+msgstr "堆疊檔案共享資料夾"
+
+msgid "Shared folder where .env and docker-compose.yml are rendered. Create one on the data array (Compose mode only)."
+msgstr ".env 與 docker-compose.yml 的渲染位置。請在資料陣列上建立（僅 Compose 模式）。"
+
+msgid "Start"
+msgstr "啟動"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Do you really want to stop Example? In Compose mode the containers are removed; all data is kept."
+msgstr "確定要停止範例服務嗎？Compose 模式下會移除容器，但保留全部資料。"
+
+msgid "Restart"
+msgstr "重新啟動"
+
+msgid "View logs"
+msgstr "檢視日誌"
+
+msgid "Open Example"
+msgstr "開啟範例"
+
+msgid "Example start output"
+msgstr "範例服務啟動輸出"
+
+msgid "Example stop output"
+msgstr "範例服務停止輸出"
+
+msgid "Example restart output"
+msgstr "範例服務重新啟動輸出"
+
+msgid "Example logs"
+msgstr "範例服務日誌"

@@ -1,0 +1,18 @@
+openmediavault-example (8.0.1) stable; urgency=medium
+
+  * Template skeleton release: full standard plugin structure for
+    OpenMediaVault 8.x.
+    - Datamodel (conf.service.example) + confdb create script +
+      engined RPC service (get/set/start/stop/restart/getLog) +
+      engine module (services panel status).
+    - Salt state with two integration modes switchable from the
+      settings page: systemd service (renders example.conf and
+      example.service, manages the unit) and Docker Compose stack
+      (renders .env and docker-compose.yml into the compose
+      directory, manages the stack).
+    - Declarative Workbench pages (navigation page + settings form
+      page with status fields, mode select and taskDialog buttons)
+      and Simplified/Traditional Chinese translations.
+    - GitHub Actions CI: lint + dpkg-buildpackage + Release.
+
+ -- ${GITHUB_USER}  Sat, 04 Oct 2026 12:00:00 +0800

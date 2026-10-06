@@ -1,0 +1,6 @@
+version: "1.0"
+type: route
+data:
+  url: "/services/example"
+  title: _("Example")
+  component: omv-services-example-navigation-page

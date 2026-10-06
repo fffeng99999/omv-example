@@ -1,0 +1,22 @@
+Source: openmediavault-example
+Section: web
+XB-Plugin-Section: services
+XB-Plugin-Architecture: all
+Priority: optional
+Maintainer: ${GITHUB_USER}
+Build-Depends: debhelper (>= 12)
+Standards-Version: 3.9.6
+Homepage: https://github.com/${GITHUB_USER}/omv-example
+
+Package: openmediavault-example
+Architecture: all
+Depends: openmediavault (>= 8.0)
+Priority: optional
+Description: openmediavault Example plugin (template skeleton)
+ Template plugin for OpenMediaVault 8.x demonstrating the full
+ standard plugin structure: datamodel + confdb + engined RPC +
+ engine module + Salt state (systemd service mode and Docker
+ Compose stack mode) + declarative Workbench pages + zh_CN/zh_TW
+ translations + GitHub Actions packaging. Copy the repository,
+ replace 'example' with the target service name and trim the
+ integration mode that is not needed.

@@ -1,0 +1,127 @@
+# Translation template for openmediavault-example.
+# Copyright (C) 2026 ${GITHUB_USER}
+# This file is distributed under the same license as the openmediavault-example package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: openmediavault-example 8.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-04 12:00+0800\n"
+"PO-Revision-Date: 2026-10-04 12:00+0800\n"
+"Last-Translator: ${GITHUB_USER}\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Example"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Updated Example settings."
+msgstr ""
+
+msgid "Running"
+msgstr ""
+
+msgid "Stopped"
+msgstr ""
+
+msgid "Not installed"
+msgstr ""
+
+msgid "Example is the plugin template skeleton. The mode selects the integration branch of the Salt state: 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit; 'Docker Compose stack' renders .env and docker-compose.yml into the compose directory and manages the stack. Save the settings and apply changes to render the files, then use the buttons below to start/stop the service. Read-only fields must set submitValue: false, and the settings route must keep 'editing: true'."
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Service status"
+msgstr ""
+
+msgid "Service"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack files are rendered and the stack is recreated on change (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched."
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Integration mode rendered by the Salt state. Keep only the branch your plugin needs and delete the other one together with its fields, templates and ctl branch."
+msgstr ""
+
+msgid "Systemd service"
+msgstr ""
+
+msgid "Docker Compose stack"
+msgstr ""
+
+msgid "Common"
+msgstr ""
+
+msgid "Port"
+msgstr ""
+
+msgid "Service port. Systemd mode: passed to the example binary. Compose mode: host port of the published container port."
+msgstr ""
+
+msgid "Systemd mode"
+msgstr ""
+
+msgid "Extra options"
+msgstr ""
+
+msgid "Free-form configuration rendered verbatim into /etc/example/example.conf (systemd mode) and into the .env file (Compose mode). TODO: replace with the real settings of your upstream service."
+msgstr ""
+
+msgid "Compose mode"
+msgstr ""
+
+msgid "Image"
+msgstr ""
+
+msgid "Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag."
+msgstr ""
+
+msgid "Stack files shared folder"
+msgstr ""
+
+msgid "Shared folder where .env and docker-compose.yml are rendered. Create one on the data array (Compose mode only)."
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Stop"
+msgstr ""
+
+msgid "Do you really want to stop Example? In Compose mode the containers are removed; all data is kept."
+msgstr ""
+
+msgid "Restart"
+msgstr ""
+
+msgid "View logs"
+msgstr ""
+
+msgid "Open Example"
+msgstr ""
+
+msgid "Example start output"
+msgstr ""
+
+msgid "Example stop output"
+msgstr ""
+
+msgid "Example restart output"
+msgstr ""
+
+msgid "Example logs"
+msgstr ""

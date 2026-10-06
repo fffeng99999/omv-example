@@ -1,0 +1,139 @@
+version: "1.0"
+type: component
+data:
+  name: omv-services-example-settings-form-page
+  type: formPage
+  config:
+    request:
+      service: Example
+      get:
+        method: get
+        transform:
+          statusText: "{{ statusText | translate }}"
+      post:
+        method: set
+    hints:
+      - type: info
+        text: _("Example is the plugin template skeleton. The mode selects the integration branch of the Salt state: 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit; 'Docker Compose stack' renders .env and docker-compose.yml into the compose directory and manages the stack. Save the settings and apply changes to render the files, then use the buttons below to start/stop the service. Read-only fields must set submitValue: false, and the settings route must keep 'editing: true'.")
+        dismissible: true
+        stateId: 7c9d3e2a-1b4f-4e69-9c40-3f7a8d21b6e4
+    fields:
+      - type: divider
+        title: _("Status")
+      - type: textInput
+        name: statusText
+        label: _("Service status")
+        submitValue: false
+        readonly: true
+
+      - type: divider
+        title: _("Service")
+      - type: checkbox
+        name: enable
+        label: _("Enabled")
+        hint: _("Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack files are rendered and the stack is recreated on change (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched.")
+        value: false
+      - type: select
+        name: mode
+        label: _("Mode")
+        hint: _("Integration mode rendered by the Salt state. Keep only the branch your plugin needs and delete the other one together with its fields, templates and ctl branch.")
+        value: "systemd"
+        options:
+          - label: _("Systemd service")
+            value: "systemd"
+          - label: _("Docker Compose stack")
+            value: "compose"
+
+      - type: divider
+        title: _("Common")
+      - type: numberInput
+        name: port
+        label: _("Port")
+        hint: _("Service port. Systemd mode: passed to the example binary. Compose mode: host port of the published container port.")
+        value: 8080
+        validators:
+          min: 1
+          max: 65535
+          patternType: port
+
+      - type: divider
+        title: _("Systemd mode")
+      - type: textInput
+        name: extraOptions
+        label: _("Extra options")
+        hint: _("Free-form configuration rendered verbatim into /etc/example/example.conf (systemd mode) and into the .env file (Compose mode). TODO: replace with the real settings of your upstream service.")
+
+      - type: divider
+        title: _("Compose mode")
+      - type: textInput
+        name: image
+        label: _("Image")
+        hint: _("Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag.")
+        value: "nginx:1.27-alpine"
+      - type: sharedFolderSelect
+        name: composeDirRef
+        label: _("Stack files shared folder")
+        hint: _("Shared folder where .env and docker-compose.yml are rendered. Create one on the data array (Compose mode only).")
+        hasEmptyOption: true
+        value: ""
+        validators:
+          requiredIf:
+            operator: truthy
+            arg0: enable
+    buttons:
+      - text: _("Start")
+        execute:
+          type: taskDialog
+          taskDialog:
+            config:
+              title: _("Example start output")
+              width: "70%"
+              startOnInit: true
+              request:
+                service: Example
+                method: start
+      - text: _("Stop")
+        confirmationDialogConfig:
+          template: confirmation
+          message: _("Do you really want to stop Example? In Compose mode the containers are removed; all data is kept.")
+        execute:
+          type: taskDialog
+          taskDialog:
+            config:
+              title: _("Example stop output")
+              width: "70%"
+              startOnInit: true
+              request:
+                service: Example
+                method: stop
+      - text: _("Restart")
+        execute:
+          type: taskDialog
+          taskDialog:
+            config:
+              title: _("Example restart output")
+              width: "70%"
+              startOnInit: true
+              request:
+                service: Example
+                method: restart
+      - text: _("View logs")
+        execute:
+          type: taskDialog
+          taskDialog:
+            config:
+              title: _("Example logs")
+              width: "70%"
+              startOnInit: true
+              request:
+                service: Example
+                method: getLog
+      - text: _("Open Example")
+        execute:
+          type: url
+          url: "/externalRedirect/{{ ['http://', location() | get('hostname'), ':', port] | join }}"
+      - template: cancel
+        execute:
+          type: url
+          url: "/services/example"
+      - template: submit

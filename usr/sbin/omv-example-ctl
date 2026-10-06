@@ -1,0 +1,144 @@
+#!/bin/sh
+#
+# This file is part of OpenMediaVault.
+#
+# @license   https://www.gnu.org/licenses/gpl.html GPL Version 3
+# @author    ${GITHUB_USER}
+#
+# OpenMediaVault is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# Mode-agnostic control helper for the openmediavault-example plugin.
+# It is called by the engined RPC service (as background tasks with
+# live output) and prints machine-readable single-line state for
+# 'status' (running|stopped|notinstalled).
+#
+# Usage:
+#   omv-example-ctl <op>
+#
+#   <op>  status|start|stop|restart|logs
+#
+# The integration mode is read from the OMV configuration database:
+#   - systemd: manages the example.service unit (rendered by Salt).
+#   - compose: manages the Docker Compose stack rendered by Salt into
+#     the configured compose directory.
+
+set -u
+
+. /usr/share/openmediavault/scripts/helper-functions
+
+OP="${1:-}"
+
+if [ -z "$OP" ]; then
+	echo "Usage: $0 <status|start|stop|restart|logs>" >&2
+	exit 2
+fi
+
+CONF_XPATH="/config/services/example"
+MODE="$(omv_config_get "${CONF_XPATH}/mode" 2>/dev/null || true)"
+MODE="${MODE:-systemd}"
+# The compose directory is stored as a shared folder reference (UUID)
+# and resolved to the real path with the OMV helper functions. An
+# empty reference leaves COMPOSE_DIR empty, which makes every compose
+# check report 'notinstalled'.
+COMPOSE_DIR_REF="$(omv_config_get "${CONF_XPATH}/composeDirRef" 2>/dev/null || true)"
+COMPOSE_DIR=""
+if [ -n "$COMPOSE_DIR_REF" ]; then
+	COMPOSE_DIR="$(omv_get_sharedfolder_path "$COMPOSE_DIR_REF" 2>/dev/null || true)"
+fi
+COMPOSE_FILE="${COMPOSE_DIR}/docker-compose.yml"
+SYSTEMD_UNIT="/etc/systemd/system/example.service"
+
+have_docker() {
+	command -v docker >/dev/null 2>&1
+}
+
+systemd_state() {
+	if [ ! -f "$SYSTEMD_UNIT" ]; then
+		echo "notinstalled"
+		return
+	fi
+	case "$(systemctl is-active example.service 2>/dev/null || true)" in
+		active)
+			echo "running"
+			;;
+		*)
+			echo "stopped"
+			;;
+	esac
+}
+
+compose_state() {
+	if [ ! -f "$COMPOSE_FILE" ]; then
+		echo "notinstalled"
+		return
+	fi
+	if ! have_docker; then
+		echo "stopped"
+		return
+	fi
+	if [ -n "$(docker compose -f "$COMPOSE_FILE" ps -q 2>/dev/null)" ]; then
+		echo "running"
+	else
+		echo "stopped"
+	fi
+}
+
+case "$OP" in
+	status)
+		if [ "$MODE" = "compose" ]; then
+			compose_state
+		else
+			systemd_state
+		fi
+		;;
+
+	start|stop|restart)
+		if [ "$MODE" = "compose" ]; then
+			if [ ! -f "$COMPOSE_FILE" ]; then
+				echo "Compose file '$COMPOSE_FILE' does not exist. Save the settings and apply changes first." >&2
+				exit 1
+			fi
+			if ! have_docker; then
+				echo "docker is not installed." >&2
+				exit 1
+			fi
+			case "$OP" in
+				start)
+					docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+					;;
+				stop)
+					docker compose -f "$COMPOSE_FILE" down --remove-orphans
+					;;
+				restart)
+					docker compose -f "$COMPOSE_FILE" restart
+					;;
+			esac
+		else
+			if [ ! -f "$SYSTEMD_UNIT" ]; then
+				echo "Systemd unit '$SYSTEMD_UNIT' does not exist. Save the settings and apply changes first." >&2
+				exit 1
+			fi
+			systemctl "$OP" example.service
+		fi
+		;;
+
+	logs)
+		if [ "$MODE" = "compose" ]; then
+			if [ -f "$COMPOSE_FILE" ] && have_docker; then
+				docker compose -f "$COMPOSE_FILE" logs --tail 200
+			fi
+		else
+			journalctl -u example.service -n 200 --no-pager || true
+		fi
+		;;
+
+	*)
+		echo "Unknown operation: $OP" >&2
+		exit 2
+		;;
+esac
+
+exit 0

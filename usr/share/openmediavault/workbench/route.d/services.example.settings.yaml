@@ -1,0 +1,8 @@
+version: "1.0"
+type: route
+data:
+  url: "/services/example/settings"
+  title: _("Settings")
+  editing: true
+  notificationTitle: _("Updated Example settings.")
+  component: omv-services-example-settings-form-page

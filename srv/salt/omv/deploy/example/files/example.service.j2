@@ -1,0 +1,17 @@
+{{ pillar['headers']['multiline'] -}}
+[Unit]
+Description=Example Service (managed by OpenMediaVault)
+# TODO: set the upstream documentation URL.
+Documentation=https://github.com/${GITHUB_USER}/omv-example
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+# TODO: replace with the real upstream binary/command of your plugin.
+ExecStart=/usr/bin/example --config /etc/example/example.conf --port {{ config.port | default(8080, true) }}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
