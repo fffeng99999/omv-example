@@ -3,7 +3,7 @@
 # This file is part of OpenMediaVault.
 #
 # @license   https://www.gnu.org/licenses/gpl.html GPL Version 3
-# @author    ${GITHUB_USER}
+# @author    ${GITHUB_USER} <${GITHUB_USER}@users.noreply.github.com>
 #
 # OpenMediaVault is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,12 +18,18 @@
 # Usage:
 #   omv-example-ctl <op>
 #
-#   <op>  status|start|stop|restart|logs
+#   <op>  status|start|stop|restart|logs|unregister
 #
 # The integration mode is read from the OMV configuration database:
 #   - systemd: manages the example.service unit (rendered by Salt).
-#   - compose: manages the Docker Compose stack rendered by Salt into
-#     the configured compose directory.
+#   - compose: manages the Docker Compose stack that the RPC registered
+#     in the openmediavault-compose plugin. All compose commands go
+#     through the Compose plugin helper omv-compose-run, so exactly the
+#     same --file/--env-file arguments are used as from the Compose web
+#     UI; the stack directory is
+#       <compose shared folder>/example/example.yml
+#   - unregister: removes the stack from the Compose plugin (used when
+#     the plugin is removed; see prerm).
 
 set -u
 
@@ -31,28 +37,54 @@ set -u
 
 OP="${1:-}"
 
-if [ -z "$OP" ]; then
-	echo "Usage: $0 <status|start|stop|restart|logs>" >&2
-	exit 2
-fi
+case "$OP" in
+	status|start|stop|restart|logs|unregister) ;;
+	*)
+		echo "Usage: $0 <status|start|stop|restart|logs|unregister>" >&2
+		exit 2
+	;;
+esac
+
+# Stack name in the Compose plugin; also the stack directory and the
+# base name of the generated stack files.
+STACK="example"
 
 CONF_XPATH="/config/services/example"
 MODE="$(omv_config_get "${CONF_XPATH}/mode" 2>/dev/null || true)"
 MODE="${MODE:-systemd}"
-# The compose directory is stored as a shared folder reference (UUID)
-# and resolved to the real path with the OMV helper functions. An
-# empty reference leaves COMPOSE_DIR empty, which makes every compose
-# check report 'notinstalled'.
-COMPOSE_DIR_REF="$(omv_config_get "${CONF_XPATH}/composeDirRef" 2>/dev/null || true)"
-COMPOSE_DIR=""
-if [ -n "$COMPOSE_DIR_REF" ]; then
-	COMPOSE_DIR="$(omv_get_sharedfolder_path "$COMPOSE_DIR_REF" 2>/dev/null || true)"
-fi
-COMPOSE_FILE="${COMPOSE_DIR}/docker-compose.yml"
 SYSTEMD_UNIT="/etc/systemd/system/example.service"
+
+# Resolve the Compose plugin shared folder (the directory that holds
+# all stacks of the openmediavault-compose plugin).
+compose_sf_path() {
+	_ref="$(omv_config_get "/config/services/compose/sharedfolderref" 2>/dev/null || true)"
+	[ -n "$_ref" ] && omv_get_sharedfolder_path "$_ref" 2>/dev/null || true
+}
+
+# Directory of the example stack inside the Compose shared folder.
+stack_dir() {
+	_sf="$(compose_sf_path)"
+	[ -n "$_sf" ] && echo "$_sf/$STACK"
+}
+
+# Rendered stack file of the Compose plugin.
+compose_file() {
+	_d="$(stack_dir)"
+	[ -n "$_d" ] && echo "$_d/$STACK.yml"
+}
 
 have_docker() {
 	command -v docker >/dev/null 2>&1
+}
+
+# Run docker compose for the stack through the Compose plugin helper
+# (same --file/--env-file arguments as the Compose web UI).
+dc() {
+	if [ ! -x /usr/sbin/omv-compose-run ]; then
+		echo "ERROR: the openmediavault-compose plugin is not installed." >&2
+		return 1
+	fi
+	/usr/sbin/omv-compose-run "$STACK" "$@" 2>&1
 }
 
 systemd_state() {
@@ -71,7 +103,8 @@ systemd_state() {
 }
 
 compose_state() {
-	if [ ! -f "$COMPOSE_FILE" ]; then
+	_f="$(compose_file)"
+	if [ -z "$_f" ] || [ ! -f "$_f" ]; then
 		echo "notinstalled"
 		return
 	fi
@@ -79,7 +112,7 @@ compose_state() {
 		echo "stopped"
 		return
 	fi
-	if [ -n "$(docker compose -f "$COMPOSE_FILE" ps -q 2>/dev/null)" ]; then
+	if [ -n "$(dc ps -q 2>/dev/null)" ]; then
 		echo "running"
 	else
 		echo "stopped"
@@ -97,8 +130,9 @@ case "$OP" in
 
 	start|stop|restart)
 		if [ "$MODE" = "compose" ]; then
-			if [ ! -f "$COMPOSE_FILE" ]; then
-				echo "Compose file '$COMPOSE_FILE' does not exist. Save the settings and apply changes first." >&2
+			_f="$(compose_file)"
+			if [ -z "$_f" ] || [ ! -f "$_f" ]; then
+				echo "The stack is not registered in the Compose plugin yet. Configure the Compose plugin shared folder, save the settings and apply the changes first." >&2
 				exit 1
 			fi
 			if ! have_docker; then
@@ -107,13 +141,13 @@ case "$OP" in
 			fi
 			case "$OP" in
 				start)
-					docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+					dc up -d --remove-orphans
 					;;
 				stop)
-					docker compose -f "$COMPOSE_FILE" down --remove-orphans
+					dc down --remove-orphans
 					;;
 				restart)
-					docker compose -f "$COMPOSE_FILE" restart
+					dc restart
 					;;
 			esac
 		else
@@ -127,17 +161,44 @@ case "$OP" in
 
 	logs)
 		if [ "$MODE" = "compose" ]; then
-			if [ -f "$COMPOSE_FILE" ] && have_docker; then
-				docker compose -f "$COMPOSE_FILE" logs --tail 200
+			_f="$(compose_file)"
+			if [ -n "$_f" ] && [ -f "$_f" ] && have_docker; then
+				dc logs --tail 200
 			fi
 		else
 			journalctl -u example.service -n 200 --no-pager || true
 		fi
 		;;
 
-	*)
-		echo "Unknown operation: $OP" >&2
-		exit 2
+	unregister)
+		# Remove the example stack from the Compose plugin (used when
+		# the plugin is removed). Best effort.
+		if [ ! -x /usr/sbin/omv-rpc ]; then
+			echo "omv-rpc not available - skipping."
+			exit 0
+		fi
+		_uuid="$(omv-rpc -u admin Config get '{"id":"conf.service.compose.file"}' 2>/dev/null \
+			| python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    data = []
+if isinstance(data, dict):
+    data = data.get("data", []) or []
+for obj in data:
+    if isinstance(obj, dict) and obj.get("name") == "example":
+        print(obj.get("uuid", ""))
+        break
+' 2>/dev/null)"
+		if [ -n "$_uuid" ]; then
+			echo "Removing the example stack from the Compose plugin ..."
+			omv-rpc -u admin Compose deleteFile "{\"uuid\":\"$_uuid\"}" >/dev/null 2>&1 \
+				&& echo "The stack was removed." \
+				|| echo "The stack could not be removed automatically - delete it on the Compose page."
+		else
+			echo "No example stack registered in the Compose plugin."
+		fi
 		;;
 esac
 

@@ -14,7 +14,7 @@ data:
         method: set
     hints:
       - type: info
-        text: _("Example is the plugin template skeleton. The mode selects the integration branch of the Salt state — 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit, while 'Docker Compose stack' renders .env and docker-compose.yml into the compose directory and manages the stack. Save the settings and apply changes to render the files, then use the buttons below to start/stop the service.")
+        text: _("Example is the plugin template skeleton. The mode selects the integration branch of the Salt state — 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit, while 'Docker Compose stack' registers the stack in the Compose plugin (Services -> Compose -> Files) and manages its lifecycle. Save the settings and apply changes, then use the buttons below to start/stop the service.")
         dismissible: true
         stateId: 7c9d3e2a-1b4f-4e69-9c40-3f7a8d21b6e4
     fields:
@@ -31,7 +31,7 @@ data:
       - type: checkbox
         name: enable
         label: _("Enabled")
-        hint: _("Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack files are rendered and the stack is recreated on change (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched.")
+        hint: _("Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack registered in the Compose plugin is started (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched.")
         value: false
       - type: select
         name: mode
@@ -68,18 +68,8 @@ data:
       - type: textInput
         name: image
         label: _("Image")
-        hint: _("Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag.")
+        hint: _("Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag. The stack is registered in the Compose plugin on save; configure the Compose plugin shared folder first.")
         value: "nginx:1.27-alpine"
-      - type: sharedFolderSelect
-        name: composeDirRef
-        label: _("Stack files shared folder")
-        hint: _("Shared folder where .env and docker-compose.yml are rendered. Create one on the data array (Compose mode only).")
-        hasEmptyOption: true
-        value: ""
-        validators:
-          requiredIf:
-            operator: truthy
-            arg0: enable
     buttons:
       - text: _("Start")
         execute:

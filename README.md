@@ -26,9 +26,8 @@ omv-example/
 │   ├── default.sls                    # 双模式 state（mode 切换 systemd/compose 分支）
 │   └── files/
 │       ├── example.conf.j2            # systemd 模式：服务配置
-│       ├── example.service.j2         # systemd 模式：unit 文件
-│       ├── example.env.j2             # compose 模式：.env（0600）
-│       └── example.compose.yml.j2     # compose 模式：栈文件
+│       └── example.service.j2         # systemd 模式：unit 文件
+│                                      # compose 模式无模板：栈由 omv-compose 渲染
 ├── usr/sbin/omv-example-ctl           # 双模式控制脚本（RPC 后台任务调用）
 └── usr/share/openmediavault/
     ├── datamodels/conf.service.example.json   # 配置模型（禁 required、单一类型）
@@ -69,12 +68,16 @@ omv-example/
 
 | 上游发布形态 | 保留/做法 | 参照插件 |
 |---|---|---|
-| 只发 Docker 镜像 | compose 模式 | omv-immich |
+| 只发 Docker 镜像 | compose 模式（**栈注册进 omv-compose**，见下） | omv-immich 8.0.7 |
 | 发 Linux 原生二进制/脚本 | systemd 模式 | omv-frpc / omv-clouddrive2 |
 | 有官方安装器/自更新器 | 模板两轨都不留，ctl 重写为安装器轨：下载+校验+官方脚本静默安装（Docker/daemon.json 全禁碰），Salt 只管官方 unit 的 enabled/running（onlyif 未装跳过），升级走官方 updater，卸载自写非交互且保数据 | omv-1panel |
 
-- **systemd 模式**（frpc/clouddrive2 类宿主机服务）：保留 `default.sls` 的 `{% else %}` 分支 + `example.conf.j2` / `example.service.j2`；替换 `ExecStart` 为真实上游命令、`example.conf.j2` 为真实配置格式。删除 compose 分支、`*.env.j2` / `*.compose.yml.j2`、`mode` 字段与表单「Compose mode」区。
-- **compose 模式**（immich 类容器应用）：保留 compose 分支 + `example.env.j2` / `example.compose.yml.j2`；替换服务定义。删除 systemd 分支、`example.conf.j2` / `example.service.j2`、`mode` 字段与表单「Systemd mode」区；`postrm` 里的 unit 清理也一并删。
+> **硬规则（工作区铁律）**：docker 部署的插件**必须遵循 openmediavault-compose 的文件结构规则并注册进 omv-compose**
+> （栈 = `<compose 共享文件夹>/<栈名>/<栈名>.yml` + `<栈名>.env`；只有写进 `conf.service.compose.file` 才在 Compose 页可见）。
+> **栈文件由 omv-compose 渲染，插件不得自渲染**（单一写入者，防双写）。详见 skill `references/integration-modes.md` 轨 1。
+
+- **systemd 模式**（frpc/clouddrive2 类宿主机服务）：保留 `default.sls` 的 `{% else %}` 分支 + `example.conf.j2` / `example.service.j2`；替换 `ExecStart` 为真实上游命令、`example.conf.j2` 为真实配置格式。删除 compose 分支、`mode` 字段与表单「Compose mode」区；`omv-example-ctl` 里的 compose 分支与 `unregister`、`debian/control` 的 `openmediavault-compose` 依赖也一并删。
+- **compose 模式**（immich 类容器应用）：保留 compose 分支。**做法（勿改回自渲染）**：RPC `set()` 在保存后调 `Compose.setFile` 注册/更新栈（body/env 在 PHP 的 `buildComposeBody()`/`buildComposeEnv()` 里生成，共享文件夹用 `${{ sf:"<名称>" }}` 占位符引用；切回 systemd 时调 `Compose.deleteFile`）；Salt `compose` 分支只跑 `/usr/sbin/omv-compose-run <栈名> up/down`（`onlyif: test -f <栈文件>`，Compose 未配共享文件夹时用 `test.configurable_test_state` 跳过）；`omv-example-ctl` 的 compose 命令全部走 `omv-compose-run`。**替换 `buildComposeBody`/`buildComposeEnv` 里的服务定义为真实上游栈**；删除 systemd 分支、`example.conf.j2` / `example.service.j2`、`mode` 字段与表单「Systemd mode」区；`postrm` 里的 unit 清理也一并删。
 - 保留单分支后，`default.sls` 里 `{% if mode == ... %}` 可简化为直接写状态；ctl 里对应分支同理。
 
 ### 4. 改元数据与字段
@@ -95,7 +98,7 @@ python -c "import json;json.load(open('usr/share/openmediavault/datamodels/conf.
 推送 GitHub 后打 tag `v8.0.1` → CI（lint + build + Release 附 deb）→ 从 Release 下 deb 装测试环境验证（生产 NAS 禁装未验证插件）：
 
 1. `dpkg -i` / `apt-get install ./...deb` 装上后 Ctrl+F5 强刷 WebUI（Workbench 只在启动时拉一次 route-config.json）。
-2. `omv-rpc '<Name>' get '{}'` 验后端；页面改设置 → 应用 → 验 Salt 渲染物（unit / compose 文件）与启停往返。
+2. `omv-rpc '<Name>' get '{}'` 验后端；页面改设置 → 应用 → 验渲染物（systemd 模式看 unit/配置；compose 模式看 `Services → Compose → Files` 里是否出现该栈）与启停往返。
 3. 中文界面逐项过一遍 i18n。
 
 ## 内置的已验证模式（派生时保留，勿随手删）
@@ -103,7 +106,7 @@ python -c "import json;json.load(open('usr/share/openmediavault/datamodels/conf.
 - **RPC**：`set()` 用 `array_intersect_key` 白名单剥离只读字段；启停/日志走 `execBgProc` 后台任务（taskDialog 实时输出）；`get()` 实时拼状态字段，状态文本返回英文 msgid 由前端 `translate` 过滤。
 - **表单页**：只读状态字段必须 `submitValue: false` + `readonly: true`（否则 getFormValues 会把派生值回写给 set）；设置页 route 必须带 `editing: true`（否则详情页数据不加载）；「打开面板」按钮的 `externalRedirect` + `location() | get('hostname')` 写法可直接复用。
 - **Salt**：`file.managed` 显式 `- template: jinja`；互斥 if/else 分支的 state ID 必须不同；`onlyif/unless` 防目标不存在时 Apply 失败；渲染物头部带 auto-generated 标记（禁手改，改模板）。
-- **目录与版本**：目录类字段（`composeDirRef`）用 **sharedfolder 引用**——datamodel `oneOf: uuidv4|空串` + 表单 `sharedFolderSelect` 下拉（用户像飞牛选卷一样选共享文件夹）+ Salt `omv_conf.get_sharedfolder_path`（**必须 `{% if ref %}` 守卫**）+ ctl `omv_get_sharedfolder_path`（helper-functions 自带）+ engined module 监听 `org.openmediavault.conf.system.sharedfolder`（否则共享文件夹变更后不重渲染）。数据一律落阵列，禁放 `/root/`；`image`/`version` 字段固定上游版本，**禁 latest**（不可复现、无法检测更新）；更新检测 RPC 比对上游 Releases，参照 omv-immich / omv-1panel 的 `getLatestVersion`（GitHub 匿名 403 限流要有降级提示）。
+- **目录与版本**：**数据类**目录字段用 **sharedfolder 引用**——datamodel `oneOf: uuidv4|空串` + 表单 `sharedFolderSelect` 下拉（用户像飞牛选卷一样选共享文件夹）+ Salt `omv_conf.get_sharedfolder_path`（**必须 `{% if ref %}` 守卫**）+ ctl `omv_get_sharedfolder_path`（helper-functions 自带）+ engined module 监听 `org.openmediavault.conf.system.sharedfolder`（否则共享文件夹变更后不重渲染）。数据一律落阵列，禁放 `/root/`；`image`/`version` 字段固定上游版本，**禁 latest**（不可复现、无法检测更新）；更新检测 RPC 比对上游 Releases，参照 omv-immich / omv-1panel 的 `getLatestVersion`（GitHub 匿名 403 限流要有降级提示）。**栈文件目录不再是插件字段**——它固定为 `<omv-compose 共享文件夹>/<栈名>/`，由 omv-compose 管。
 - **构建**：`.gitattributes` 强制 LF；`render-vars.sh` 渲染 + 残留校验；CI 校验 changelog 与 tag 一致。
 - 禁改上游服务自身功能：插件只做 OMV 侧集成（启停/自启/数据目录/状态展示），上游业务在其原生界面管理。
 

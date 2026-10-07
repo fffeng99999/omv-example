@@ -33,7 +33,7 @@ msgstr ""
 msgid "Not installed"
 msgstr ""
 
-msgid "Example is the plugin template skeleton. The mode selects the integration branch of the Salt state: 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit; 'Docker Compose stack' renders .env and docker-compose.yml into the compose directory and manages the stack. Save the settings and apply changes to render the files, then use the buttons below to start/stop the service. Read-only fields must set submitValue: false, and the settings route must keep 'editing: true'."
+msgid "Example is the plugin template skeleton. The mode selects the integration branch of the Salt state — 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit, while 'Docker Compose stack' registers the stack in the Compose plugin (Services -> Compose -> Files) and manages its lifecycle. Save the settings and apply changes, then use the buttons below to start/stop the service."
 msgstr ""
 
 msgid "Status"
@@ -48,7 +48,7 @@ msgstr ""
 msgid "Enabled"
 msgstr ""
 
-msgid "Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack files are rendered and the stack is recreated on change (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched."
+msgid "Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack registered in the Compose plugin is started (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched."
 msgstr ""
 
 msgid "Mode"
@@ -87,13 +87,7 @@ msgstr ""
 msgid "Image"
 msgstr ""
 
-msgid "Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag."
-msgstr ""
-
-msgid "Stack files shared folder"
-msgstr ""
-
-msgid "Shared folder where .env and docker-compose.yml are rendered. Create one on the data array (Compose mode only)."
+msgid "Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag. The stack is registered in the Compose plugin on save; configure the Compose plugin shared folder first."
 msgstr ""
 
 msgid "Start"

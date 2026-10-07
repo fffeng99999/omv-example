@@ -32,8 +32,8 @@ msgstr "已停止"
 msgid "Not installed"
 msgstr "未部署"
 
-msgid "Example is the plugin template skeleton. The mode selects the integration branch of the Salt state: 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit; 'Docker Compose stack' renders .env and docker-compose.yml into the compose directory and manages the stack. Save the settings and apply changes to render the files, then use the buttons below to start/stop the service. Read-only fields must set submitValue: false, and the settings route must keep 'editing: true'."
-msgstr "Example 是插件模板骨架。「模式」选择 Salt state 渲染的集成分支：「systemd 服务」渲染 /etc/example/example.conf 与 example.service 单元并管理该单元；「Docker Compose 栈」向 compose 目录渲染 .env 与 docker-compose.yml 并管理该栈。保存设置后点「应用」渲染文件，再用下方按钮启停服务。只读字段必须写 submitValue: false，设置页路由必须保留 editing: true。"
+msgid "Example is the plugin template skeleton. The mode selects the integration branch of the Salt state — 'Systemd service' renders /etc/example/example.conf and the example.service unit and manages the unit, while 'Docker Compose stack' registers the stack in the Compose plugin (Services -> Compose -> Files) and manages its lifecycle. Save the settings and apply changes, then use the buttons below to start/stop the service."
+msgstr "Example 是插件模板骨架。「模式」选择 Salt state 的集成分支：「systemd 服务」渲染 /etc/example/example.conf 与 example.service 单元并管理该单元；「Docker Compose 栈」把栈注册进 Compose 插件（服务 → Compose → 文件）并管理其生命周期。保存设置后点「应用」，再用下方按钮启停服务。"
 
 msgid "Status"
 msgstr "状态"
@@ -47,8 +47,8 @@ msgstr "服务"
 msgid "Enabled"
 msgstr "启用"
 
-msgid "Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack files are rendered and the stack is recreated on change (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched."
-msgstr "由 OMV 自动管理服务。点「应用」时：systemd 模式渲染并启动 systemd 单元；Compose 模式渲染栈文件、文件变化时重建栈。停用服务会在「应用」时停止并移除单元；数据一律不动。"
+msgid "Automatically manage the service from OMV. On Apply the systemd unit is rendered and started (systemd mode), or the Compose stack registered in the Compose plugin is started (Compose mode). Disabling the service stops it and removes the unit on Apply; data is never touched."
+msgstr "由 OMV 自动管理服务：点「应用」渲染并启动 systemd 单元（systemd 模式），或启动已在 Compose 插件注册的栈（Compose 模式）。停用服务会在「应用」时停止并移除单元；数据不受影响。"
 
 msgid "Mode"
 msgstr "模式"
@@ -86,14 +86,8 @@ msgstr "Compose 模式"
 msgid "Image"
 msgstr "镜像"
 
-msgid "Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag."
-msgstr "example 服务的容器镜像（仅 Compose 模式）。请固定具体版本，避免浮动 tag。"
-
-msgid "Stack files shared folder"
-msgstr "栈文件共享文件夹"
-
-msgid "Shared folder where .env and docker-compose.yml are rendered. Create one on the data array (Compose mode only)."
-msgstr ".env 与 docker-compose.yml 的渲染位置。请在数据阵列上创建（仅 Compose 模式）。"
+msgid "Container image of the example service (Compose mode only). Pin a specific version instead of a floating tag. The stack is registered in the Compose plugin on save; configure the Compose plugin shared folder first."
+msgstr "example 服务的容器镜像（仅 Compose 模式）。请固定具体版本，避免浮动 tag。栈会在保存时注册进 Compose 插件；请先配置 Compose 插件的共享文件夹。"
 
 msgid "Start"
 msgstr "启动"

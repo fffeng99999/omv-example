@@ -1,7 +1,7 @@
 # This file is part of OpenMediaVault.
 #
 # @license   https://www.gnu.org/licenses/gpl.html GPL Version 3
-# @author    ${GITHUB_USER}
+# @author    ${GITHUB_USER} <${GITHUB_USER}@users.noreply.github.com>
 #
 # OpenMediaVault is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,9 +14,10 @@
 #   - systemd: renders /etc/example/example.conf and the
 #     /etc/systemd/system/example.service unit and manages the unit
 #     (frpc/clouddrive2 style host service).
-#   - compose: renders .env and docker-compose.yml into the compose
-#     directory and manages the stack via 'docker compose'
-#     (immich style container application).
+#   - compose: manages the lifecycle of the Docker Compose stack that
+#     the RPC registers in the openmediavault-compose plugin. The stack
+#     files are rendered BY the Compose plugin (single writer); this
+#     state only runs 'omv-compose-run example up/down'.
 #
 # When deriving a real plugin from this template, KEEP the branch that
 # matches your target service and DELETE the other one (together with
@@ -31,15 +32,6 @@
 
 {% set config = salt['omv_conf.get']('conf.service.example') %}
 {% set mode = config.mode | default('systemd', true) %}
-# The compose directory is a shared folder reference (UUID). Resolve
-# it with the omv_conf module; an empty reference (nothing selected)
-# leaves 'dir' empty and the compose branch renders nothing.
-{% set dirref = config.composeDirRef | default('', true) %}
-{% if dirref %}
-{% set dir = salt['omv_conf.get_sharedfolder_path'](dirref) %}
-{% else %}
-{% set dir = '' %}
-{% endif %}
 
 {% if mode == 'compose' %}
 
@@ -59,68 +51,46 @@ example_systemctl_daemon_reload:
     - onchanges:
       - file: remove_example_systemd_unit_file
 
-{% if dir %}
+# The stack is registered in the openmediavault-compose plugin by the
+# RPC on save and rendered there into
+#   <compose shared folder>/example/example.yml (+ example.env).
+# This state only brings the stack up/down through the Compose plugin
+# helper, so exactly the same --file/--env-file arguments are used as
+# from the Compose web UI.
+{% set compose = salt['omv_conf.get']('conf.service.compose') %}
+{% if compose.sharedfolderref | length > 0 %}
 
-render_example_env:
-  file.managed:
-    - name: '{{ dir }}/.env'
-    - source:
-      - salt://{{ tpldir }}/files/example.env.j2
-    - template: jinja
-    - context:
-        config: {{ config | json }}
-    - user: root
-    - group: root
-    - mode: '0600'
-    - makedirs: True
-
-render_example_compose:
-  file.managed:
-    - name: '{{ dir }}/docker-compose.yml'
-    - source:
-      - salt://{{ tpldir }}/files/example.compose.yml.j2
-    - template: jinja
-    - context:
-        config: {{ config | json }}
-    - user: root
-    - group: root
-    - mode: '0644'
-    - makedirs: True
+{% set sfpath = salt['omv_conf.get_sharedfolder_path'](compose.sharedfolderref).rstrip('/') %}
+{% set stackfile = sfpath ~ '/example/example.yml' %}
 
 {% if config.enable | to_bool %}
 
-# Recreate the stack when the rendered files changed (settings change).
-# Explicit deployments are done with the plugin buttons so the image
-# pull output is visible to the user.
-example_compose_up:
+example_stack_up:
   cmd.run:
-    - name: docker compose up -d --remove-orphans
-    - cwd: '{{ dir }}'
-    - onchanges:
-      - file: render_example_env
-      - file: render_example_compose
+    - name: /usr/sbin/omv-compose-run example up -d
+    - onlyif: test -f '{{ stackfile }}'
 
 {% else %}
 
 # Disabled: remove the containers but never touch the data. Skipped
-# when the stack was never rendered.
-example_compose_down:
+# when the stack was never registered.
+example_stack_down:
   cmd.run:
-    - name: docker compose down --remove-orphans
-    - cwd: '{{ dir }}'
-    - onlyif: test -f '{{ dir }}/docker-compose.yml'
+    - name: /usr/sbin/omv-compose-run example down --remove-orphans
+    - onlyif: test -f '{{ stackfile }}'
 
 {% endif %}
 
 {% else %}
 
-# Compose mode without a shared folder selected: nothing to render.
-example_compose_dir_missing:
+# Compose mode while the Compose plugin shared folder is not configured
+# yet: nothing to do (the RPC reports a clear error on save).
+example_compose_not_configured:
   test.configurable_test_state:
-    - name: example_compose_dir_missing
+    - name: example_compose_not_configured
     - changes: False
     - result: True
-    - comment: "Select a shared folder for the stack files on the Example settings page first."
+    - comment: "Configure the Compose plugin (Services -> Compose -> Settings) and select the shared folder for the compose files first."
 
 {% endif %}
 
@@ -130,12 +100,8 @@ example_compose_dir_missing:
 # systemd mode
 ########################################################################
 
-# Make sure no compose stack is left over from a mode switch.
-example_compose_down_on_switch:
-  cmd.run:
-    - name: docker compose down --remove-orphans
-    - cwd: '{{ dir }}'
-    - onlyif: test -f '{{ dir }}/docker-compose.yml'
+# Note: switching from Compose mode to systemd mode removes the stack
+# registration (and stops the containers) in the RPC, not here.
 
 render_example_config:
   file.managed:

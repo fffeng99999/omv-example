@@ -28,17 +28,6 @@
 		"image": {
 			"type": "string",
 			"default": "nginx:1.27-alpine"
-		},
-		"composeDirRef": {
-			"type": "string",
-			"oneOf": [{
-				"type": "string",
-				"format": "uuidv4"
-			}, {
-				"type": "string",
-				"maxLength": 0
-			}],
-			"default": ""
 		}
 	}
 }

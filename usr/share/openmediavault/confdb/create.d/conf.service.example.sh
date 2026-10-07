@@ -3,7 +3,7 @@
 # This file is part of OpenMediaVault.
 #
 # @license   https://www.gnu.org/licenses/gpl.html GPL Version 3
-# @author    ${GITHUB_USER}
+# @author    ${GITHUB_USER} <${GITHUB_USER}@users.noreply.github.com>
 #
 # OpenMediaVault is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,10 +24,13 @@ set -e
 #       <port>8080</port>
 #       <extraOptions>...</extraOptions>
 #       <image>nginx:1.27-alpine</image>
-#       <composeDirRef>uuid-or-empty</composeDirRef>
 #     </example>
 #   </services>
 # </config>
+#
+# NOTE: in Compose mode the stack is registered in the Compose plugin
+# (conf.service.compose.file) by the RPC on save - there is no stack
+# directory field in this plugin any more.
 #
 # NOTE: defaults here MUST match conf.service.example.json. New fields
 # added in a later plugin version need a migrations.d script that adds
@@ -40,7 +43,6 @@ if ! omv_config_exists "/config/services/example"; then
 	omv_config_add_key "/config/services/example" "port" "8080"
 	omv_config_add_key "/config/services/example" "extraOptions" ""
 	omv_config_add_key "/config/services/example" "image" "nginx:1.27-alpine"
-	omv_config_add_key "/config/services/example" "composeDirRef" ""
 fi
 
 exit 0

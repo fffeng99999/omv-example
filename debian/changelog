@@ -1,3 +1,25 @@
+openmediavault-example (8.0.4) stable; urgency=medium
+
+  * Compose mode now follows the openmediavault-compose conventions
+    (same pattern as omv-immich 8.0.7): the plugin no longer renders
+    .env / docker-compose.yml itself. On save the RPC registers or
+    updates the stack through the Compose RPC (Compose.setFile), so it
+    lives in the Compose plugin shared folder as
+    <compose shared folder>/example/example.yml + example.env and shows
+    up in the Compose web UI; switching back to systemd mode removes
+    the registration again (Compose.deleteFile).
+    - The 'composeDirRef' (stack files shared folder) property and the
+      example.env.j2 / example.compose.yml.j2 templates are gone; the
+      Salt state only runs the lifecycle through the Compose plugin
+      helper omv-compose-run (up/down) and skips everything while the
+      Compose plugin shared folder is not configured.
+    - The ctl helper resolves the stack from the Compose plugin
+      settings and adds an 'unregister' action (used by prerm).
+    - openmediavault-compose is a dependency; remove it if you derive a
+      systemd-only plugin from this template.
+
+ -- fffeng99999 <fffeng99999@users.noreply.github.com>  Tue, 07 Oct 2026 19:00:00 +0800
+
 openmediavault-example (8.0.3) stable; urgency=medium
 
   * Fix the CI lint failure: plain scalars in workbench YAML must not
@@ -9,7 +31,7 @@ openmediavault-example (8.0.3) stable; urgency=medium
     executable bit (Windows checkouts lose the bit, which would
     break first-install configuration).
 
- -- fffeng99999  Mon, 06 Oct 2026 19:10:00 +0800
+ -- fffeng99999 <fffeng99999@users.noreply.github.com>  Mon, 06 Oct 2026 19:10:00 +0800
 
 openmediavault-example (8.0.2) stable; urgency=medium
 
@@ -19,7 +41,7 @@ openmediavault-example (8.0.2) stable; urgency=medium
     externalRedirect/:url workbench route and the click ends on the
     404 page. Same fix as immich 8.0.3.
 
- -- fffeng99999  Mon, 06 Oct 2026 18:30:00 +0800
+ -- fffeng99999 <fffeng99999@users.noreply.github.com>  Mon, 06 Oct 2026 18:30:00 +0800
 
 openmediavault-example (8.0.1) stable; urgency=medium
 
@@ -38,4 +60,4 @@ openmediavault-example (8.0.1) stable; urgency=medium
       and Simplified/Traditional Chinese translations.
     - GitHub Actions CI: lint + dpkg-buildpackage + Release.
 
- -- ${GITHUB_USER}  Sat, 04 Oct 2026 12:00:00 +0800
+ -- ${GITHUB_USER} <${GITHUB_USER}@users.noreply.github.com>  Sat, 04 Oct 2026 12:00:00 +0800

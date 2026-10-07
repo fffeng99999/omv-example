@@ -3,14 +3,14 @@ Section: web
 XB-Plugin-Section: services
 XB-Plugin-Architecture: all
 Priority: optional
-Maintainer: ${GITHUB_USER}
+Maintainer: ${GITHUB_USER} <${GITHUB_USER}@users.noreply.github.com>
 Build-Depends: debhelper (>= 12)
 Standards-Version: 3.9.6
 Homepage: https://github.com/${GITHUB_USER}/omv-example
 
 Package: openmediavault-example
 Architecture: all
-Depends: openmediavault (>= 8.0)
+Depends: openmediavault (>= 8.0), openmediavault-compose
 Priority: optional
 Description: openmediavault Example plugin (template skeleton)
  Template plugin for OpenMediaVault 8.x demonstrating the full
@@ -19,4 +19,8 @@ Description: openmediavault Example plugin (template skeleton)
  Compose stack mode) + declarative Workbench pages + zh_CN/zh_TW
  translations + GitHub Actions packaging. Copy the repository,
  replace 'example' with the target service name and trim the
- integration mode that is not needed.
+ integration mode that is not needed. In Compose mode the stack is
+ registered in the openmediavault-compose plugin (Compose.setFile)
+ instead of being rendered by this plugin; remove the
+ openmediavault-compose dependency if you derive a systemd-only
+ plugin.

@@ -4,7 +4,7 @@
  * This file is part of OpenMediaVault.
  *
  * @license   https://www.gnu.org/licenses/gpl.html GPL Version 3
- * @author    ${GITHUB_USER}
+ * @author    ${GITHUB_USER} <${GITHUB_USER}@users.noreply.github.com>
  *
  * OpenMediaVault is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@ namespace Engined\Module;
  *
  * Marks the module dirty whenever the settings change so that
  * 'Apply changes' re-runs the Salt state (render the systemd unit /
- * config files or the Compose stack files and manage them), and
- * reports the service status to the global Services monitoring
- * (dashboard).
+ * config files, or start/stop the Compose stack registered in the
+ * openmediavault-compose plugin), and reports the service status to
+ * the global Services monitoring (dashboard).
  */
 class Example extends \OMV\Engine\Module\ServiceAbstract
 	implements \OMV\Engine\Notify\IListener, \OMV\Engine\Module\IServiceStatus
@@ -64,25 +64,10 @@ class Example extends \OMV\Engine\Module\ServiceAbstract
 			"org.openmediavault.conf.service.example",
 			[$this, "setDirty"]
 		);
-		// Compose mode renders into a shared folder selected by
-		// reference, so a modified shared folder must mark the
-		// service dirty when it is the referenced one.
-		$dispatcher->addListener(
-			OMV_NOTIFY_MODIFY,
-			"org.openmediavault.conf.system.sharedfolder",
-			[$this, "onSharedFolder"]
-		);
-	}
-
-	public function onSharedFolder($object)
-	{
-		$db = \OMV\Config\Database::getInstance();
-		if ($db->exists("conf.service.example", [
-			"operator" => "stringEquals",
-			"arg0" => "composeDirRef",
-			"arg1" => $object["uuid"]
-		])) {
-			$this->setDirty();
-		}
+		// Note: in Compose mode the stack is rendered by the Compose
+		// plugin, whose own module already listens for shared folder
+		// changes; this plugin has no shared folder references of its
+		// own. Add a listener here (as in omv-immich) if your real
+		// plugin adds data directory shared folder references.
 	}
 }
