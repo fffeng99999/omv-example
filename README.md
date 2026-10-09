@@ -112,7 +112,7 @@ python -c "import json;json.load(open('usr/share/openmediavault/datamodels/conf.
 
 ## 更多参考
 
-- 完整工作流与坑清单：`.codebuddy/skills/omv-plugin-dev/`（SKILL.md + references/{architecture,integration-modes,ci-packaging,i18n-workbench,pitfalls}.md）
-- 三轨集成模式设计（对标 1Panel/fnOS 的成文规范）：`.codebuddy/skills/omv-plugin-dev/references/integration-modes.md`
+- 完整工作流与坑清单：`.trae/skills/omv-plugin-dev/`（SKILL.md + references/{architecture,integration-modes,ci-packaging,i18n-workbench,pitfalls}.md）
+- 三轨集成模式设计（对标 1Panel/fnOS 的成文规范）：`.trae/skills/omv-plugin-dev/references/integration-modes.md`
 - Workbench 字段/组件手册：`omv-reference/omv-workbench-docs/`
 - 运维红线（装插件到 NAS 的流程）：`project_rules_ops.md` + omv-safe-admin skill
